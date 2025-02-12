@@ -2,5 +2,13 @@ streamlit==1.31.1
 googletrans==3.1.0a0
 SpeechRecognition==3.10.1
 gTTS==2.5.1
-playsound==1.2.2
-PyAudio==0.2.14
+sounddevice==0.4.6  # Alternative to PyAudio
+soundfile==0.12.1   # For audio file handling
+numpy==1.24.3       # Required by sounddevice
+requests==2.31.0    # For API calls
+python-dotenv==1.0.0  # For environment variables
+pytz==2024.1        # For timezone handling
+# Optional: choose one of these for audio playback
+playsound==1.2.2  # If you want to use playsound
+simpleaudio==1.0.4  # Alternative audio playback
+pygame==2.5.2  
