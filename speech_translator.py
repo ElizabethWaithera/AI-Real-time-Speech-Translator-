@@ -5,7 +5,17 @@ from gtts import gTTS
 import os
 import time
 import tempfile
-from playsound import playsound
+from logger_setup import (
+    setup_logger,
+    log_speech_event,
+    log_error,
+    log_translation_event,
+    log_api_usage,
+    get_log_summary
+)
+import sounddevice as sd
+import soundfile as sf
+import numpy as np
 import threading
 import queue
 
@@ -53,6 +63,7 @@ def initialize_session_state():
 
 def speech_to_text(language='en-US'):
     """Convert speech to text using speech recognition"""
+    start_time = time.time()
     r = sr.Recognizer()
     with sr.Microphone() as source:
         # Visual feedback for listening state
@@ -71,6 +82,8 @@ def speech_to_text(language='en-US'):
             status_placeholder.success("✅ Speech processed successfully!")
             time.sleep(1)
             status_placeholder.empty()
+            duration = (time.time() - start_time) * 1000
+            log_api_usage("speech_recognition", True, duration)
             return text
             
         except sr.WaitTimeoutError:
@@ -93,10 +106,13 @@ def speech_to_text(language='en-US'):
 
 def translate_text(text, src_lang, dest_lang):
     """Translate text between languages"""
+    start_time = time.time()
     translator = Translator()
     try:
         with st.spinner("🔄 Translating..."):
             translation = translator.translate(text, src=src_lang, dest=dest_lang)
+        duration = (time.time() - start_time) * 1000
+        log_translation_event(src_lang, dest_lang, True, duration)
         return translation.text
     except Exception as e:
         st.error(f"⚠️ Translation error: {str(e)}")
@@ -175,6 +191,10 @@ def display_conversation_history():
                 """)
 
 def main():
+    # Initialize logger
+    setup_logger()
+    log_speech_event("app_start", {"version": "1.0.0"})
+    
     # Sidebar with instructions
     with st.sidebar:
         st.title("ℹ️ Instructions")
@@ -196,6 +216,18 @@ def main():
         - Speakers or headphones
         """)
         
+        st.markdown("---")
+        st.subheader("📊 Usage Statistics")
+        if st.button("View Today's Statistics"):
+            summary = get_log_summary()
+            st.write(f"Total Translations: {summary['total_translations']}")
+            st.write(f"Success Rate: {(summary['successful_translations']/summary['total_translations']*100 if summary['total_translations'] > 0 else 0):.1f}%")
+            st.write(f"Average Translation Time: {summary['average_translation_time']:.1f}ms")
+            st.write("Most Used Language Pairs:")
+            for pair, count in sorted(summary['language_pairs'].items(), key=lambda x: x[1], reverse=True)[:3]:
+                st.write(f"- {pair}: {count} translations")
+        
+        st.markdown("---")
         if st.button("🗑️ Clear History"):
             st.session_state.message_history = []
             st.experimental_rerun()
