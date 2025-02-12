@@ -5,4 +5,4 @@ gTTS==2.5.1
 playsound==1.2.2
 requests==2.31.0
 python-dotenv==1.0.0
-pyaudio
+PyAudio==0.2.14
