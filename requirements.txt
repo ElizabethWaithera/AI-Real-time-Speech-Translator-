@@ -2,11 +2,6 @@ streamlit==1.31.1
 googletrans==3.1.0a0
 SpeechRecognition==3.10.1
 gTTS==2.5.1
-sounddevice==0.4.6
-soundfile==0.12.1
-numpy>=1.26.0  # Updated for Python 3.12 compatibility
+playsound==1.2.2
 requests==2.31.0
 python-dotenv==1.0.0
-pytz==2024.1
-setuptools>=68.0.0  # Added for Python 3.12 compatibility
-wheel>=0.42.0  
