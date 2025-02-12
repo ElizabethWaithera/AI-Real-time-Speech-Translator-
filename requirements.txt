@@ -10,5 +10,5 @@ python-dotenv==1.0.0  # For environment variables
 pytz==2024.1        # For timezone handling
 # Optional: choose one of these for audio playback
 playsound==1.2.2  # If you want to use playsound
-simpleaudio==1.0.4  # Alternative audio playback
+#simpleaudio==1.0.4  # Alternative audio playback
 pygame==2.5.2  
