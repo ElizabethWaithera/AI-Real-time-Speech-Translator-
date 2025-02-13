@@ -136,7 +136,6 @@ def generate_audio_html(audio_file):
         logging.error(f"Error generating audio HTML: {str(e)}")
         return None
 
-[Previous functions remain the same...]
 def create_audio_device():
     """Create and configure audio device with error handling"""
     try:
@@ -274,7 +273,6 @@ def process_speech(src_lang, dest_lang, user_name):
     
     return None
 
-[Rest of the code remains the same...]
 
 def display_conversation_history():
     """Display conversation history in a structured format"""
