@@ -136,6 +136,23 @@ def generate_audio_html(audio_file):
         logging.error(f"Error generating audio HTML: {str(e)}")
         return None
 
+def initialize_session_state():
+    """Initialize session state variables with error handling"""
+    try:
+        if 'message_history' not in st.session_state:
+            st.session_state.message_history = []
+        if 'audio_queue' not in st.session_state:
+            st.session_state.audio_queue = queue.Queue()
+        if 'listening_status' not in st.session_state:
+            st.session_state.listening_status = False
+        if 'error_count' not in st.session_state:
+            st.session_state.error_count = 0
+    except Exception as e:
+        logging.error(f"Error initializing session state: {str(e)}")
+        st.error("Error initializing application state")
+
+
+
 def create_audio_device():
     """Create and configure audio device with error handling"""
     try:
