@@ -172,6 +172,7 @@ st.markdown("""
 
 # Language options with flags
 LANGUAGES = {
+    # Common Languages
     'en': '🇺🇸 English',
     'es': '🇪🇸 Spanish',
     'fr': '🇫🇷 French',
@@ -179,11 +180,57 @@ LANGUAGES = {
     'it': '🇮🇹 Italian',
     'pt': '🇵🇹 Portuguese',
     'ru': '🇷🇺 Russian',
+    
+    # Asian Languages
     'ja': '🇯🇵 Japanese',
     'ko': '🇰🇷 Korean',
-    'zh-cn': '🇨🇳 Chinese (Simplified)',
+    'zh': '🇨🇳 Chinese (Simplified)',  # Fixed Chinese code
+    'hi': '🇮🇳 Hindi',
+    'th': '🇹🇭 Thai',
+    'vi': '🇻🇳 Vietnamese',
+    
+    # African Languages
+    'sw': '🇰🇪 Swahili',
+    'am': '🇪🇹 Amharic',
+    'ha': '🇳🇬 Hausa',
+    'ig': '🇳🇬 Igbo',
+    'yo': '🇳🇬 Yoruba',
+    'zu': '🇿🇦 Zulu',
+    'xh': '🇿🇦 Xhosa',
+    'af': '🇿🇦 Afrikaans',
+    'sn': '🇿🇼 Shona',
+    'so': '🇸🇴 Somali',
+    
+    # Middle Eastern Languages
     'ar': '🇸🇦 Arabic',
-    'hi': '🇮🇳 Hindi'
+    'fa': '🇮🇷 Persian',
+    'ur': '🇵🇰 Urdu',
+    'he': '🇮🇱 Hebrew',
+    'tr': '🇹🇷 Turkish',
+    
+    # South Asian Languages
+    'bn': '🇧🇩 Bengali',
+    'ta': '🇮🇳 Tamil',
+    'te': '🇮🇳 Telugu',
+    'ml': '🇮🇳 Malayalam',
+    'kn': '🇮🇳 Kannada',
+    
+    # European Languages
+    'nl': '🇳🇱 Dutch',
+    'pl': '🇵🇱 Polish',
+    'uk': '🇺🇦 Ukrainian',
+    'el': '🇬🇷 Greek',
+    'cs': '🇨🇿 Czech',
+    'sv': '🇸🇪 Swedish',
+    'da': '🇩🇰 Danish',
+    'fi': '🇫🇮 Finnish',
+    'no': '🇳🇴 Norwegian',
+    
+    # Southeast Asian Languages
+    'id': '🇮🇩 Indonesian',
+    'ms': '🇲🇾 Malay',
+    'tl': '🇵🇭 Filipino',
+    'km': '🇰🇭 Khmer'
 }
 
 def initialize_session_state():
