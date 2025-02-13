@@ -373,7 +373,7 @@ def main():
                         st.session_state.favorite_translations.remove(item['id'])
                     else:
                         st.session_state.favorite_translations.add(item['id'])
-                    st.experimental_rerun()
+                    
     else:
         st.info("👋 Welcome! Start translating to see your history here.")
 
