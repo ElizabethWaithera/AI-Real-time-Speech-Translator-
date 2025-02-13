@@ -211,6 +211,24 @@ def process_speech(src_lang, dest_lang, user_name):
     
     return None
 
+def display_conversation_history():
+    """Display conversation history in a structured format"""
+    st.subheader("💬 Conversation History")
+    
+    if not st.session_state.message_history:
+        st.info("No conversation history yet. Start speaking to begin!")
+        return
+        
+    for msg in reversed(st.session_state.message_history):
+        with st.container():
+            st.markdown(f"""
+            <div class="history-entry">
+                <strong>{msg['user']} ({msg['timestamp']})</strong><br>
+                🗣️ Original: <i>{msg['original']}</i><br>
+                {f"🔄 Translation: <i>{msg['translated']}</i>" if msg['translated'] else ""}
+            </div>
+            """, unsafe_allow_html=True)
+
 def main():
     # Initialize
     initialize_session_state()
@@ -247,12 +265,6 @@ def main():
             st.session_state.message_history = []
             st.experimental_rerun()
     
-    # Rest of your existing main() function code...
-    st.title("🌎 AI Real-time Speech Translator")
-    st.markdown("Enable seamless communication between English and Spanish speakers")
-    
-    initialize_session_state()
-    
     # Speaker interfaces
     col1, col2 = st.columns(2)
     
@@ -260,6 +272,7 @@ def main():
         st.markdown("""
         <div class="speaker-box">
             <h2>🇺🇸 English Speaker (User 1)</h2>
+        </div>
         """, unsafe_allow_html=True)
         
         if not st.session_state.listening_status:
@@ -267,13 +280,12 @@ def main():
                 audio_file = process_speech('en', 'es', 'English Speaker')
                 if audio_file:
                     st.session_state.audio_queue.put(audio_file)
-        
-        st.markdown("</div>", unsafe_allow_html=True)
     
     with col2:
         st.markdown("""
         <div class="speaker-box">
             <h2>🇪🇸 Spanish Speaker (User 2)</h2>
+        </div>
         """, unsafe_allow_html=True)
         
         if not st.session_state.listening_status:
@@ -281,8 +293,6 @@ def main():
                 audio_file = process_speech('es', 'en', 'Spanish Speaker')
                 if audio_file:
                     st.session_state.audio_queue.put(audio_file)
-        
-        st.markdown("</div>", unsafe_allow_html=True)
     
     # Display conversation history
     st.markdown("---")
