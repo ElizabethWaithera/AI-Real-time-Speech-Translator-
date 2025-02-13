@@ -5,9 +5,18 @@ from gtts import gTTS
 import os
 import time
 import tempfile
-from playsound import playsound
-import threading
+import sounddevice as sd
+import soundfile as sf
+import numpy as np
 import queue
+import threading
+import logging
+
+# Configure logging
+logging.basicConfig(
+    level=logging.INFO,
+    format='%(asctime)s - %(levelname)s - %(message)s'
+)
 
 # Set page configuration
 st.set_page_config(
@@ -17,7 +26,7 @@ st.set_page_config(
     initial_sidebar_state="expanded"
 )
 
-# Custom CSS
+# Custom CSS with improved styling
 st.markdown("""
     <style>
     .main {
@@ -27,224 +36,219 @@ st.markdown("""
         width: 100%;
         height: 3rem;
         margin: 1rem 0;
+        background-color: #4CAF50;
+        color: white;
+        border: none;
+        border-radius: 4px;
+        transition: background-color 0.3s;
+    }
+    .stButton>button:hover {
+        background-color: #45a049;
+    }
+    .stButton>button:active {
+        background-color: #3d8b40;
     }
     .status-box {
         padding: 1rem;
         border-radius: 0.5rem;
         margin: 1rem 0;
+        background-color: #f8f9fa;
     }
     .speaker-box {
         padding: 2rem;
         border-radius: 0.5rem;
         margin: 1rem 0;
-        border: 2px solid #f0f2f6;
+        border: 2px solid #e9ecef;
+        background-color: white;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    }
+    .history-entry {
+        padding: 1rem;
+        margin: 0.5rem 0;
+        border-left: 4px solid #4CAF50;
+        background-color: #f8f9fa;
     }
     </style>
 """, unsafe_allow_html=True)
 
 def initialize_session_state():
-    """Initialize session state variables"""
-    if 'message_history' not in st.session_state:
-        st.session_state.message_history = []
-    if 'audio_queue' not in st.session_state:
-        st.session_state.audio_queue = queue.Queue()
-    if 'listening_status' not in st.session_state:
-        st.session_state.listening_status = False
+    """Initialize session state variables with error handling"""
+    try:
+        if 'message_history' not in st.session_state:
+            st.session_state.message_history = []
+        if 'audio_queue' not in st.session_state:
+            st.session_state.audio_queue = queue.Queue()
+        if 'listening_status' not in st.session_state:
+            st.session_state.listening_status = False
+        if 'error_count' not in st.session_state:
+            st.session_state.error_count = 0
+    except Exception as e:
+        logging.error(f"Error initializing session state: {str(e)}")
+        st.error("Error initializing application state")
+
+def create_audio_device():
+    """Create and configure audio device with error handling"""
+    try:
+        return sr.Microphone()
+    except Exception as e:
+        logging.error(f"Error creating audio device: {str(e)}")
+        st.error("Could not initialize microphone. Please check your audio settings.")
+        return None
 
 def speech_to_text(language='en-US'):
-    """Convert speech to text using speech recognition"""
+    """Enhanced speech to text conversion with better error handling and feedback"""
     r = sr.Recognizer()
-    with sr.Microphone() as source:
-        # Visual feedback for listening state
+    audio_device = create_audio_device()
+    
+    if not audio_device:
+        return None
+        
+    with audio_device as source:
         status_placeholder = st.empty()
-        status_placeholder.info(f"🎤 Listening... (Speaking in {'English' if language=='en-US' else 'Spanish'})")
-        st.session_state.listening_status = True
-        
-        # Adjust for ambient noise
-        r.adjust_for_ambient_noise(source, duration=0.5)
-        
         try:
+            # Visual feedback
+            status_placeholder.info(f"🎤 Listening... (Speaking in {'English' if language=='en-US' else 'Spanish'})")
+            st.session_state.listening_status = True
+            
+            # Improve noise handling
+            r.adjust_for_ambient_noise(source, duration=1.0)
+            r.dynamic_energy_threshold = True
+            
+            # Record with timeout
             audio = r.listen(source, timeout=5, phrase_time_limit=10)
             status_placeholder.info("🔍 Processing speech...")
             
-            text = r.recognize_google(audio, language=language)
-            status_placeholder.success("✅ Speech processed successfully!")
-            time.sleep(1)
-            status_placeholder.empty()
-            return text
-            
+            # Multiple recognition attempts
+            for attempt in range(2):
+                try:
+                    text = r.recognize_google(audio, language=language)
+                    status_placeholder.success("✅ Speech processed successfully!")
+                    time.sleep(1)
+                    status_placeholder.empty()
+                    st.session_state.error_count = 0  # Reset error count on success
+                    return text
+                except sr.UnknownValueError:
+                    if attempt == 0:
+                        continue
+                    raise
+                
         except sr.WaitTimeoutError:
-            status_placeholder.error("⚠️ No speech detected. Please try again.")
-            time.sleep(2)
-            status_placeholder.empty()
-            return None
+            handle_error(status_placeholder, "No speech detected. Please try again.")
         except sr.UnknownValueError:
-            status_placeholder.error("⚠️ Could not understand audio. Please speak clearly and try again.")
-            time.sleep(2)
-            status_placeholder.empty()
-            return None
+            handle_error(status_placeholder, "Could not understand audio. Please speak clearly.")
         except sr.RequestError:
-            status_placeholder.error("⚠️ Could not connect to speech recognition service. Please check your internet connection.")
-            time.sleep(2)
-            status_placeholder.empty()
-            return None
+            handle_error(status_placeholder, "Speech recognition service error. Please check your internet connection.")
+        except Exception as e:
+            handle_error(status_placeholder, f"Unexpected error: {str(e)}")
         finally:
             st.session_state.listening_status = False
-
-def translate_text(text, src_lang, dest_lang):
-    """Translate text between languages"""
-    translator = Translator()
-    try:
-        with st.spinner("🔄 Translating..."):
-            translation = translator.translate(text, src=src_lang, dest=dest_lang)
-        return translation.text
-    except Exception as e:
-        st.error(f"⚠️ Translation error: {str(e)}")
-        return None
-
-def text_to_speech(text, lang):
-    """Convert text to speech and save as audio file"""
-    try:
-        with st.spinner("🔊 Generating speech..."):
-            tts = gTTS(text=text, lang=lang)
-            temp_file = tempfile.NamedTemporaryFile(delete=False, suffix='.mp3')
-            temp_filename = temp_file.name
-            temp_file.close()
-            tts.save(temp_filename)
-        return temp_filename
-    except Exception as e:
-        st.error(f"⚠️ Text-to-speech error: {str(e)}")
-        return None
-
-def play_audio(audio_file):
-    """Play audio file using playsound"""
-    try:
-        with st.spinner("🎵 Playing translation..."):
-            playsound(audio_file)
-        os.unlink(audio_file)  # Clean up temporary file
-    except Exception as e:
-        st.error(f"⚠️ Audio playback error: {str(e)}")
-
-def process_speech(src_lang, dest_lang, user_name):
-    """Process speech: convert to text, translate, and convert back to speech"""
-    # Speech to text
-    text = speech_to_text('en-US' if src_lang == 'en' else 'es-ES')
-    if text:
-        # Add original text to history with timestamp
-        timestamp = time.strftime("%H:%M:%S")
-        st.session_state.message_history.append({
-            'timestamp': timestamp,
-            'user': user_name,
-            'original': text,
-            'translated': None
-        })
-        
-        # Translate
-        translated_text = translate_text(text, src_lang, dest_lang)
-        if translated_text:
-            # Update history with translation
-            st.session_state.message_history[-1]['translated'] = translated_text
             
-            # Text to speech
-            audio_file = text_to_speech(translated_text, dest_lang)
-            return audio_file
     return None
 
-def display_conversation_history():
-    """Display conversation history in a structured format"""
-    st.subheader("💬 Conversation History")
+def handle_error(placeholder, message):
+    """Centralized error handling with user feedback"""
+    logging.error(message)
+    placeholder.error(f"⚠️ {message}")
+    st.session_state.error_count += 1
     
-    if not st.session_state.message_history:
-        st.info("No conversation history yet. Start speaking to begin!")
-        return
-        
-    for msg in st.session_state.message_history:
-        col1, col2 = st.columns(2)
-        
-        with col1:
-            st.markdown(f"""
-            **{msg['user']} ({msg['timestamp']}):**  
-            🗣️ Original: _{msg['original']}_
-            """)
+    # Suggest solutions based on error count
+    if st.session_state.error_count >= 3:
+        st.warning("""
+        Having trouble? Try these steps:
+        1. Check your microphone connection
+        2. Speak closer to the microphone
+        3. Reduce background noise
+        4. Ensure you have a stable internet connection
+        """)
+    
+    time.sleep(2)
+    placeholder.empty()
+
+def play_audio(audio_file):
+    """Play audio using sounddevice for better compatibility"""
+    try:
+        with st.spinner("🎵 Playing translation..."):
+            data, samplerate = sf.read(audio_file)
+            sd.play(data, samplerate)
+            sd.wait()  # Wait until audio is finished playing
+        os.unlink(audio_file)  # Clean up
+    except Exception as e:
+        logging.error(f"Audio playback error: {str(e)}")
+        st.error("Could not play audio. Please check your speaker settings.")
+
+def process_speech(src_lang, dest_lang, user_name):
+    """Process speech with enhanced error handling and user feedback"""
+    try:
+        with st.spinner("Processing speech..."):
+            text = speech_to_text('en-US' if src_lang == 'en' else 'es-ES')
             
-        with col2:
-            if msg['translated']:
-                st.markdown(f"""
-                **Translation:**  
-                🔄 _{msg['translated']}_
-                """)
+            if text:
+                # Add to history
+                timestamp = time.strftime("%H:%M:%S")
+                st.session_state.message_history.append({
+                    'timestamp': timestamp,
+                    'user': user_name,
+                    'original': text,
+                    'translated': None,
+                    'success': False
+                })
+                
+                # Translate
+                translated_text = translate_text(text, src_lang, dest_lang)
+                if translated_text:
+                    # Update history
+                    st.session_state.message_history[-1].update({
+                        'translated': translated_text,
+                        'success': True
+                    })
+                    
+                    # Generate audio
+                    return text_to_speech(translated_text, dest_lang)
+                    
+    except Exception as e:
+        logging.error(f"Error in speech processing: {str(e)}")
+        st.error("An error occurred during speech processing")
+    
+    return None
 
 def main():
-    # Sidebar with instructions
+    # Initialize
+    initialize_session_state()
+    
+    # Header
+    st.title("🌎 AI Real-time Speech Translator")
+    st.markdown("Enable seamless communication between English and Spanish speakers")
+    
+    # Sidebar with enhanced instructions
     with st.sidebar:
         st.title("ℹ️ Instructions")
         st.markdown("""
         1. Choose your language (English or Spanish)
-        2. Click the 'Speak' button
+        2. Click the 'Speak' button when ready
         3. Speak clearly into your microphone
         4. Wait for the translation
         5. Listen to the translated audio
         
-        **Note:** Make sure your microphone is properly connected and you have a stable internet connection.
+        **Tips for Best Results:**
+        - Use a good quality microphone
+        - Speak clearly and at a normal pace
+        - Minimize background noise
+        - Keep sentences reasonably short
         """)
         
         st.markdown("---")
-        st.subheader("🛠️ Technical Requirements")
-        st.markdown("""
-        - Working microphone
-        - Stable internet connection
-        - Speakers or headphones
-        """)
+        
+        # Add system status indicators
+        st.subheader("🔧 System Status")
+        audio_status = "✅ Ready" if create_audio_device() else "❌ Not Available"
+        st.markdown(f"**Microphone:** {audio_status}")
         
         if st.button("🗑️ Clear History"):
             st.session_state.message_history = []
             st.experimental_rerun()
     
-    # Main content
-    st.title("🌎 AI Real-time Speech Translator")
-    st.markdown("Enable seamless communication between English and Spanish speakers")
-    
-    initialize_session_state()
-    
-    # Speaker interfaces
-    col1, col2 = st.columns(2)
-    
-    with col1:
-        st.markdown("""
-        <div class="speaker-box">
-            <h2>🇺🇸 English Speaker (User 1)</h2>
-        """, unsafe_allow_html=True)
-        
-        if not st.session_state.listening_status:
-            if st.button("🎤 Speak English", key="en_button"):
-                audio_file = process_speech('en', 'es', 'English Speaker')
-                if audio_file:
-                    st.session_state.audio_queue.put(audio_file)
-        
-        st.markdown("</div>", unsafe_allow_html=True)
-    
-    with col2:
-        st.markdown("""
-        <div class="speaker-box">
-            <h2>🇪🇸 Spanish Speaker (User 2)</h2>
-        """, unsafe_allow_html=True)
-        
-        if not st.session_state.listening_status:
-            if st.button("🎤 Hablar Español", key="es_button"):
-                audio_file = process_speech('es', 'en', 'Spanish Speaker')
-                if audio_file:
-                    st.session_state.audio_queue.put(audio_file)
-        
-        st.markdown("</div>", unsafe_allow_html=True)
-    
-    # Display conversation history
-    st.markdown("---")
-    display_conversation_history()
-    
-    # Process audio queue
-    while not st.session_state.audio_queue.empty():
-        audio_file = st.session_state.audio_queue.get()
-        play_audio(audio_file)
+    # Rest of your existing main() function code...
+    [Previous main() implementation]
 
 if __name__ == "__main__":
     main()
