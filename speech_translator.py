@@ -248,7 +248,50 @@ def main():
             st.experimental_rerun()
     
     # Rest of your existing main() function code...
-    [Previous main() implementation]
+    st.title("🌎 AI Real-time Speech Translator")
+    st.markdown("Enable seamless communication between English and Spanish speakers")
+    
+    initialize_session_state()
+    
+    # Speaker interfaces
+    col1, col2 = st.columns(2)
+    
+    with col1:
+        st.markdown("""
+        <div class="speaker-box">
+            <h2>🇺🇸 English Speaker (User 1)</h2>
+        """, unsafe_allow_html=True)
+        
+        if not st.session_state.listening_status:
+            if st.button("🎤 Speak English", key="en_button"):
+                audio_file = process_speech('en', 'es', 'English Speaker')
+                if audio_file:
+                    st.session_state.audio_queue.put(audio_file)
+        
+        st.markdown("</div>", unsafe_allow_html=True)
+    
+    with col2:
+        st.markdown("""
+        <div class="speaker-box">
+            <h2>🇪🇸 Spanish Speaker (User 2)</h2>
+        """, unsafe_allow_html=True)
+        
+        if not st.session_state.listening_status:
+            if st.button("🎤 Hablar Español", key="es_button"):
+                audio_file = process_speech('es', 'en', 'Spanish Speaker')
+                if audio_file:
+                    st.session_state.audio_queue.put(audio_file)
+        
+        st.markdown("</div>", unsafe_allow_html=True)
+    
+    # Display conversation history
+    st.markdown("---")
+    display_conversation_history()
+    
+    # Process audio queue
+    while not st.session_state.audio_queue.empty():
+        audio_file = st.session_state.audio_queue.get()
+        play_audio(audio_file)
 
 if __name__ == "__main__":
     main()
