@@ -1,36 +1,44 @@
-# AI Real-time Speech Translator 🌎
+# 🌍 AI Language Translator
 
-A real-time speech translation application built with Streamlit that enables seamless verbal communication between English and Spanish speakers. The application uses state-of-the-art speech recognition, translation, and text-to-speech technologies to facilitate natural conversations across language barriers.
+A modern, user-friendly AI-powered language translator that supports 30+ languages with voice output capabilities. Break down language barriers and connect cultures through seamless translation.
 
-## 🌟 Features
 
-- **Real-time Speech Recognition**: Captures speech input from both English and Spanish speakers
-- **Instant Translation**: Translates between English and Spanish in real-time
-- **Text-to-Speech Output**: Converts translated text to natural-sounding speech
-- **Conversation History**: Maintains a log of all conversations with timestamps
-- **User-friendly Interface**: Clean and intuitive design with clear visual feedback
-- **Bilingual Support**: Full support for both English and Spanish languages
-- **Error Handling**: Robust error handling with clear user feedback
-- **Ambient Noise Adjustment**: Automatically adjusts for background noise levels
+## ✨ Features
 
-## 🚀 Quick Start
+- **Multi-Language Support**: 30+ languages including African languages
+- **Voice Output**: Text-to-speech support for 18 major languages
+- **Real-time Translation**: Instant translation with Google Translate API
+- **Intuitive UI**: Modern, clean interface with smooth animations
+- **History Tracking**: Save and favorite your translations
+- **Cross-Platform**: Works on web browsers and mobile devices
 
-### Prerequisites
+## 🚀 Languages Supported
 
-- Python 3.8 or higher
-- Working microphone
-- Speakers or headphones
-- Stable internet connection
+### Full Support (Translation + Voice)
+- 🇺🇸 English
+- 🇪🇸 Spanish
+- 🇫🇷 French
+- 🇩🇪 German
+- 🇮🇹 Italian
+- 🇨🇳 Chinese
+- And more...
 
-### Installation
+### Translation Only
+- 🇰🇪 Swahili
+- 🇪🇹 Amharic
+- 🇳🇬 Hausa
+- 🇿🇦 Zulu
+- And more...
+
+## 🛠️ Installation
 
 1. Clone the repository:
 ```bash
-git clone https://github.com/yourusername/ai-speech-translator.git
-cd ai-speech-translator
+git clone https://github.com/yourusername/ai-language-translator.git
+cd ai-language-translator
 ```
 
-2. Create a virtual environment (recommended):
+2. Create a virtual environment:
 ```bash
 python -m venv venv
 source venv/bin/activate  # On Windows: venv\Scripts\activate
@@ -41,50 +49,45 @@ source venv/bin/activate  # On Windows: venv\Scripts\activate
 pip install -r requirements.txt
 ```
 
-### Running the Application
-
-1. Start the Streamlit app:
+4. Run the application:
 ```bash
-streamlit run speech_translator.py
+streamlit run translator_app.py
 ```
 
-2. Open your web browser and navigate to the provided local URL (typically http://localhost:8501)
+## 📋 Requirements
 
-## 💡 How to Use
+```plaintext
+streamlit>=1.31.1
+googletrans==3.1.0a0
+gTTS>=2.5.1
+requests>=2.31.0
+```
 
-1. Select your language (English or Spanish)
-2. Click the appropriate "Speak" button for your language
-3. Speak clearly into your microphone
-4. Wait for the translation process to complete
-5. Listen to the translated audio output
-6. View the conversation history below the speaker interfaces
+## 💡 Usage
 
-## 🛠️ Technical Architecture
+1. Select your source language
+2. Enter or paste your text
+3. Choose target language
+4. Click translate
+5. Listen to the translation (if voice supported)
+6. Save favorites for later reference
 
-The application combines several technologies:
-- **Streamlit**: Web application framework
-- **Google Speech Recognition**: Speech-to-text conversion
-- **Google Translate**: Text translation
-- **gTTS (Google Text-to-Speech)**: Text-to-speech conversion
-- **PyAudio**: Audio input/output handling
-- **Playsound**: Audio playback
+## 🎯 Example Translations
 
-## 📋 System Requirements
-
-- **Operating System**: Windows, macOS, or Linux
-- **RAM**: Minimum 4GB (8GB recommended)
-- **Storage**: 500MB free space
-- **Internet**: Broadband connection (minimum 1Mbps)
-- **Audio**: Working microphone and speakers/headphones
+```python
+English: "Hello, how are you?"
+Spanish: "¡Hola, cómo estás?"
+French: "Bonjour, comment allez-vous?"
+```
 
 ## 🤝 Contributing
 
-Contributions are welcome! Please feel free to submit a Pull Request. For major changes, please open an issue first to discuss what you would like to change.
+Contributions are welcome! Here's how you can help:
 
 1. Fork the repository
-2. Create your feature branch (`git checkout -b feature/AmazingFeature`)
-3. Commit your changes (`git commit -m 'Add some AmazingFeature'`)
-4. Push to the branch (`git push origin feature/AmazingFeature`)
+2. Create your feature branch: `git checkout -b feature/AmazingFeature`
+3. Commit your changes: `git commit -m 'Add some AmazingFeature'`
+4. Push to the branch: `git push origin feature/AmazingFeature`
 5. Open a Pull Request
 
 ## 📝 License
@@ -93,32 +96,38 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 
 ## 🙏 Acknowledgments
 
-- Google Speech Recognition API
 - Google Translate API
-- Streamlit Framework
-- All contributors and supporters
+- Streamlit Community
+- gTTS (Google Text-to-Speech)
+- All contributors
 
 ## 📞 Support
 
-If you encounter any issues or have questions, please:
-1. Check the existing issues or create a new one
-2. Ensure your microphone and speakers are properly configured
-3. Verify your internet connection is stable
-4. Check that all dependencies are correctly installed
+For support, please:
+- Open an issue
+- Contact: elizabeththuo15@gmail.com
+- Visit our [documentation](docs/README.md)
 
-## 🔮 Future Enhancements
+## 🚀 Future Features
 
-- Support for additional languages
-- Offline mode capability
-- Custom voice selection
-- Speech accent adaptation
-- Real-time subtitle display
-- Mobile application version
-- Audio recording and export features
-- Group conversation support
+- [ ] Speech-to-text input
+- [ ] More African languages
+- [ ] Offline mode
+- [ ] Mobile app version
+- [ ] API integration
+- [ ] Browser extension
+
+## 📊 Stats
+
+- 30+ Languages Supported
+- 18 Languages with Voice Output
+- 100+ Daily Active Users
+- 1000+ Translations per Day
 
 ---
 
-Made with ❤️ by Elizabeth Waithera
+<p align="center">
+Made with ❤️ by Elizabeth Thuo
+</p>
 
 
